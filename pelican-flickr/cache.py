@@ -15,6 +15,7 @@ class FlickrCache:
 
   # Exclusions
   sets_exclude = None
+  sets_include = None
 
   # Cached sets (just ids)
   sets_cached = None
@@ -22,10 +23,20 @@ class FlickrCache:
   def __init__(self):
 
     # Init flickr api
-    self.api = flickrapi.FlickrAPI(main.FLICKR_API_KEY)
+    if not main.FLICKR_API_SECRET:
+      self.api = flickrapi.FlickrAPI(main.FLICKR_API_KEY)
+    else:
+      self.api = flickrapi.FlickrAPI(main.FLICKR_API_KEY, main.FLICKR_API_SECRET)
+      (token, frob) = self.api.get_token_part_one(perms='read')
+      if not token: raw_input("Press ENTER after you authorized this program")
+      self.api.get_token_part_two((token, frob))
 
     # Setup includes / excludes
     self.sets_exclude = main.FLICKR_SETS_EXCLUDE
+    self.sets_include = main.FLICKR_SETS_INCLUDE
+
+    if self.sets_include:
+      self.sets_exclude = None
 
     # Setup cached sets ids
     self.sets_cached = FlickrCached('photosets')
@@ -46,9 +57,15 @@ class FlickrCache:
       sets = self.api.photosets_getList(user_id=main.FLICKR_USER)
       for photoset in sets.find('photosets').findall('photoset'):
         s = FlickrPhotoset(xml=photoset)
+
+        if self.sets_include and (s.id not in self.sets_include and s.title not in self.sets_include):
+          logger.info(u"Not included %s" % (s,))
+          continue
+
         if self.sets_exclude and (s.id in self.sets_exclude or s.title in self.sets_exclude):
           logger.info(u"Excludes %s" % (s,))
           continue
+
         logger.info(u"Use %s from %s" % (s, s.cached and 'cache' or 'flickr'))
 
         # Load photos from each new photoset

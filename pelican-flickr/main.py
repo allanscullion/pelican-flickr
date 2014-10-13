@@ -26,6 +26,10 @@ def init_flickr(sender):
     'FLICKR_API_KEY' : {
       'mandatory' : True,
     },
+    'FLICKR_API_SECRET' : {
+      'mandatory' : False,
+      'default' : None,
+    },
     'FLICKR_USER' : {
       'mandatory' : True,
     },
@@ -42,6 +46,10 @@ def init_flickr(sender):
       'default' : True,
     },
     'FLICKR_SETS_EXCLUDE' : {
+      'mandatory' : False,
+      'default' : None,
+    },
+    'FLICKR_SETS_INCLUDE' : {
       'mandatory' : False,
       'default' : None,
     },
