@@ -13,8 +13,9 @@ class FlickrCache:
   sets = []
   photos = []
 
-  # Exclusions
+  # Exclusions/Inclusions
   sets_exclude = None
+  sets_include = None
 
   # Cached sets (just ids)
   sets_cached = None
@@ -27,6 +28,11 @@ class FlickrCache:
 
     # Setup includes / excludes
     self.sets_exclude = main.FLICKR_SETS_EXCLUDE
+    self.sets_include = main.FLICKR_SETS_INCLUDE
+
+    # Includes always take precedence
+    if self.sets_include:
+      self.sets_exclude = None
 
     # Setup cached sets ids
     self.sets_cached = FlickrCached('photosets')
@@ -62,9 +68,15 @@ class FlickrCache:
       sets = self.api.photosets_getList()
       for photoset in sets.find('photosets').findall('photoset'):
         s = FlickrPhotoset(xml=photoset)
+
+        if self.sets_include and (s.id not in self.sets_include and s.title not in self.sets_include):
+          logger.info(u"Not included %s" % (s,))
+          continue
+
         if self.sets_exclude and (s.id in self.sets_exclude or s.title in self.sets_exclude):
           logger.info(u"Excludes %s" % (s,))
           continue
+
         logger.info(u"Use %s from %s" % (s, s.cached and 'cache' or 'flickr'))
 
         # Load photos from each new photoset

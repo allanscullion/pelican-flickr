@@ -45,6 +45,10 @@ def init_flickr(sender):
       'mandatory' : False,
       'default' : None,
     },
+    'FLICKR_SETS_INCLUDE' : {
+      'mandatory' : False,
+      'default' : None,
+    },
   }
   for setting, conf in settings.items():
     try:
